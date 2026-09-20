@@ -11,12 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function UserMenu() {
-  const { user, profile, roles, signOut } = useAuth();
+  const { user, profile, roles, signOut, signingOut } = useAuth();
   const router = useRouter();
 
   const displayName =
@@ -81,10 +81,15 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => signOut()}
+          disabled={signingOut}
           className={cn("cursor-pointer text-red-600 focus:text-red-600")}
         >
-          <LogOut className="w-4 h-4 mr-2" />
-          Déconnexion
+          {signingOut ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <LogOut className="w-4 h-4 mr-2" />
+          )}
+          {signingOut ? "Déconnexion..." : "Déconnexion"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

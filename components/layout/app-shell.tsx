@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/header";
 import { LoadingState } from "@/components/shared/loading-state";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { loading, session } = useAuth();
+  const { loading, session, signingOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     localStorage.setItem("sidebar-collapsed", String(next));
   };
 
-  if (loading) {
-    return <LoadingState message="Chargement de votre espace..." />;
+  if (loading || signingOut) {
+    return <LoadingState message={signingOut ? "Déconnexion..." : "Chargement de votre espace..."} />;
   }
 
   if (!session) {

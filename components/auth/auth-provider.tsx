@@ -16,6 +16,7 @@ interface AuthContextValue {
   roles: string[];
   permissions: Permission[];
   loading: boolean;
+  signingOut: boolean;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextValue>({
   roles: [],
   permissions: [],
   loading: true,
+  signingOut: false,
   signOut: async () => {},
   refresh: async () => {},
 });
@@ -38,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
 
   const loadUserData = useCallback(async (userId: string) => {
     const [{ data: profileData }, { data: userRolesData }] = await Promise.all([
@@ -114,11 +117,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadUserData]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    setSigningOut(true);
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore errors — proceed with local cleanup
+    }
+    setSession(null);
+    setUser(null);
     setProfile(null);
     setRoles([]);
     setPermissions([]);
-    window.location.href = "/auth/login";
+    window.location.assign("/auth/login");
   }, []);
 
   const refresh = useCallback(async () => {
@@ -129,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user, profile, roles, permissions, loading, signOut, refresh }}
+      value={{ session, user, profile, roles, permissions, loading, signingOut, signOut, refresh }}
     >
       {children}
     </AuthContext.Provider>
